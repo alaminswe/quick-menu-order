@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import { CalendarClock } from "lucide-react";
 import Header from "@/components/menu/Header";
 import CategoryTabs from "@/components/menu/CategoryTabs";
 import MenuItemCard from "@/components/menu/MenuItemCard";
@@ -34,26 +35,23 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background pb-32">
       <Header table={table} />
-      <main className="container max-w-3xl px-4">
-        <section className="py-5 animate-fade-in">
-          <h2 className="text-3xl font-bold leading-tight">
-            What would you like<br />
-            <span className="bg-gradient-warm bg-clip-text text-transparent">to eat today?</span>
-          </h2>
-          <p className="text-muted-foreground mt-2 text-sm">
-            Browse our menu, customize your order & enjoy.
-          </p>
-          <div className="flex flex-wrap gap-2 mt-3 text-xs">
-            <Link to="/kitchen" className="px-3 py-1 rounded-full bg-secondary hover:bg-muted">
-              Kitchen
-            </Link>
-            <Link to="/waiter" className="px-3 py-1 rounded-full bg-secondary hover:bg-muted">
-              Waiter
-            </Link>
-            <Link to="/admin" className="px-3 py-1 rounded-full bg-secondary hover:bg-muted">
-              Admin
-            </Link>
+      <main className="container max-w-6xl px-4">
+        <section className="py-5 sm:py-8 animate-fade-in flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
+              What would you like<br />
+              <span className="bg-gradient-warm bg-clip-text text-transparent">to eat today?</span>
+            </h2>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">
+              Browse our menu, customize your order & enjoy.
+            </p>
           </div>
+          <Link
+            to={`/checkout?table=${table}&preorder=1`}
+            className="inline-flex items-center justify-center gap-2 self-start md:self-auto px-5 py-3 rounded-2xl border-2 border-primary text-primary font-semibold hover:bg-primary/10 transition active:scale-95"
+          >
+            <CalendarClock className="h-5 w-5" /> Pre-order for later
+          </Link>
         </section>
 
         <CategoryTabs active={active} onChange={setActive} />
@@ -78,7 +76,7 @@ const Index = () => {
           })}
         </div>
 
-        <section className="grid gap-5 sm:grid-cols-2 mt-4">
+        <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mt-4">
           {filtered.length === 0 ? (
             <p className="text-muted-foreground text-sm col-span-full text-center py-8">
               No items match your filters.
