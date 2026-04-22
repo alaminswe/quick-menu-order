@@ -92,6 +92,40 @@ const OrderConfirmation = () => {
               <p className="font-semibold">Order Cancelled</p>
             </div>
           ) : (
+          <>
+          {/* Current stage spotlight — what the customer most wants to know */}
+          <div
+            className={cn(
+              "rounded-2xl p-4 mb-5 flex items-center gap-3",
+              order.status === "Served"
+                ? "bg-green-50 border border-green-200 text-green-800"
+                : "bg-gradient-warm/10 border border-primary/20"
+            )}
+          >
+            <div
+              className={cn(
+                "h-12 w-12 rounded-full flex items-center justify-center shrink-0",
+                order.status === "Served"
+                  ? "bg-green-600 text-white"
+                  : "bg-gradient-warm text-primary-foreground shadow-glow"
+              )}
+            >
+              {(() => {
+                const Icon = STEPS[stepIndex]?.icon ?? CheckCircle2;
+                return <Icon className="h-6 w-6" />;
+              })()}
+            </div>
+            <div className="min-w-0">
+              <p className="font-bold text-base leading-tight">
+                {STEPS[stepIndex]?.label}
+                {order.status === "Served" && " ✓"}
+              </p>
+              <p className="text-xs opacity-80">
+                {STEPS[stepIndex]?.desc}
+              </p>
+            </div>
+          </div>
+
           <div className="flex justify-between gap-2">
             {STEPS.map((s, i) => {
               const Icon = s.icon;
@@ -120,6 +154,7 @@ const OrderConfirmation = () => {
               );
             })}
           </div>
+          </>
           )}
 
           {!cancelled && (
@@ -168,6 +203,18 @@ const OrderConfirmation = () => {
             <span>${order.total.toFixed(2)}</span>
           </div>
         </section>
+
+        {/* Invoice — available once payment is confirmed (online payments) */}
+        {order.payment === "online" && !cancelled && (
+          <Link
+            to={`/invoice/${order.id}`}
+            className="block w-full h-13 py-4 rounded-2xl bg-card border-2 border-primary text-primary font-semibold text-center active:scale-[0.98] transition"
+          >
+            <span className="inline-flex items-center gap-2">
+              <FileText className="h-5 w-5" /> View Invoice
+            </span>
+          </Link>
+        )}
       </main>
     </div>
   );
