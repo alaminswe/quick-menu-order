@@ -217,6 +217,26 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const canCancel: StoreValue["canCancel"] = (id) => {
+    const o = orders.find((x) => x.id === id);
+    if (!o) return false;
+    if (o.status !== "Taken") return false;
+    return Date.now() - o.createdAt <= CANCEL_WINDOW_MS;
+  };
+
+  const cancelOrder: StoreValue["cancelOrder"] = (id) => {
+    const o = orders.find((x) => x.id === id);
+    if (!o) return { ok: false, reason: "Order not found" };
+    if (o.status !== "Taken")
+      return { ok: false, reason: "Order is already being prepared" };
+    if (Date.now() - o.createdAt > CANCEL_WINDOW_MS)
+      return { ok: false, reason: "Cancellation window expired" };
+    setOrders((prev) =>
+      prev.map((x) => (x.id === id ? { ...x, status: "Cancelled" } : x))
+    );
+    return { ok: true };
+  };
+
   const value: StoreValue = {
     menu,
     addMenuItem,
@@ -234,6 +254,8 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     orders,
     placeOrder,
     setOrderStatus,
+    cancelOrder,
+    canCancel,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
