@@ -1,8 +1,11 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MenuItem, menuItems as initialMenu } from "@/data/menu";
 
-export type OrderStatus = "Taken" | "Cooking" | "Ready" | "Served";
+export type OrderStatus = "Taken" | "Cooking" | "Ready" | "Served" | "Cancelled";
 export type PaymentMethod = "online" | "counter";
+
+// Customer can cancel within this window (ms) and only before Cooking starts.
+export const CANCEL_WINDOW_MS = 2 * 60 * 1000;
 
 export interface CartItem {
   item: MenuItem;
@@ -53,6 +56,8 @@ interface StoreValue {
     preOrder: boolean;
   }) => Order;
   setOrderStatus: (id: string, status: OrderStatus) => void;
+  cancelOrder: (id: string) => { ok: boolean; reason?: string };
+  canCancel: (id: string) => boolean;
 }
 
 const StoreContext = createContext<StoreValue | undefined>(undefined);
