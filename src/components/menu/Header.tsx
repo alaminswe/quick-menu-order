@@ -4,7 +4,6 @@ import {
   UtensilsCrossed,
   ChefHat,
   ConciergeBell,
-  Shield,
   Menu as MenuIcon,
   QrCode,
   Search,
@@ -21,10 +20,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
+// Customer-facing header only exposes staff entry points for Kitchen and Waiter.
+// Admin is intentionally hidden — accessible only by visiting /admin directly.
 const navLinks = [
   { to: "/kitchen", label: "Kitchen", icon: ChefHat },
   { to: "/waiter", label: "Waiter", icon: ConciergeBell },
-  { to: "/admin", label: "Admin", icon: Shield },
 ];
 
 const Header = ({ table }: { table: number }) => {
@@ -107,7 +107,7 @@ const Header = ({ table }: { table: number }) => {
           mobileOpen ? "max-h-72" : "max-h-0"
         )}
       >
-        <nav className="container max-w-6xl px-4 py-3 grid grid-cols-3 gap-2">
+        <nav className="container max-w-6xl px-4 py-3 grid grid-cols-2 gap-2">
           {navLinks.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
