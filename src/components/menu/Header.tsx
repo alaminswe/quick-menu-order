@@ -1,6 +1,6 @@
 import { UtensilsCrossed } from "lucide-react";
 
-const Header = () => {
+const Header = ({ table }: { table: number }) => {
   return (
     <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border">
       <div className="container max-w-3xl flex items-center gap-3 py-4">
@@ -9,7 +9,7 @@ const Header = () => {
         </div>
         <div className="flex flex-col">
           <h1 className="text-xl font-bold leading-tight">Bella Cucina</h1>
-          <p className="text-xs text-muted-foreground">Table 12 · Scan & Order</p>
+          <p className="text-xs text-muted-foreground">Table {table} · Scan & Order</p>
         </div>
       </div>
     </header>
