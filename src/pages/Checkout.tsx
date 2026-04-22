@@ -14,10 +14,13 @@ const Checkout = () => {
   const [params] = useSearchParams();
   const table = Number(params.get("table") ?? 1);
 
+  const initialPreOrder = params.get("preorder") === "1";
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [payment, setPayment] = useState<PaymentMethod>("online");
-  const [preOrder, setPreOrder] = useState(false);
+  const [payment, setPayment] = useState<PaymentMethod>(
+    initialPreOrder ? "online" : "online"
+  );
+  const [preOrder, setPreOrder] = useState(initialPreOrder);
   const [processing, setProcessing] = useState(false);
 
   // Pre-order forces online payment.
