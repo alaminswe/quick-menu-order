@@ -413,6 +413,8 @@ const Admin = () => {
                         ? "bg-blue-100 text-blue-700"
                         : o.status === "Cooking"
                         ? "bg-amber-100 text-amber-800"
+                        : o.status === "Cancelled"
+                        ? "bg-red-100 text-red-700"
                         : "bg-secondary text-secondary-foreground"
                     )}
                   >

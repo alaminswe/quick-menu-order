@@ -1,9 +1,11 @@
-import { Link } from "react-router-dom";
-import { ArrowLeft, BellRing, Check } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, BellRing, Check, LogOut } from "lucide-react";
 import { useStore } from "@/store/StoreContext";
 import { toast } from "sonner";
+import { clearRole } from "@/lib/auth";
 
 const Waiter = () => {
+  const navigate = useNavigate();
   const { orders, setOrderStatus } = useStore();
   const ready = orders.filter((o) => o.status === "Ready");
 
@@ -17,10 +19,19 @@ const Waiter = () => {
           <div className="h-10 w-10 rounded-2xl bg-gradient-warm flex items-center justify-center shadow-glow">
             <BellRing className="h-5 w-5 text-primary-foreground" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl font-bold">Waiter Pickup</h1>
             <p className="text-xs text-muted-foreground">{ready.length} ready to serve</p>
           </div>
+          <button
+            onClick={() => {
+              clearRole();
+              navigate("/staff/login?role=waiter", { replace: true });
+            }}
+            className="text-sm font-semibold inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-secondary hover:bg-muted"
+          >
+            <LogOut className="h-4 w-4" /> Logout
+          </button>
         </div>
       </header>
 
