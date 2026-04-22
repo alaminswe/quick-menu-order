@@ -8,6 +8,7 @@ import {
   QrCode,
   Search,
   X,
+  Eye,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import {
@@ -23,6 +24,7 @@ import { cn } from "@/lib/utils";
 // Customer-facing header only exposes staff entry points for Kitchen and Waiter.
 // Admin is intentionally hidden — accessible only by visiting /admin directly.
 const navLinks = [
+  { to: "/track", label: "Track Order", icon: Eye },
   { to: "/kitchen", label: "Kitchen", icon: ChefHat },
   { to: "/waiter", label: "Waiter", icon: ConciergeBell },
 ];
