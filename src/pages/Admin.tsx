@@ -9,6 +9,8 @@ import {
   DollarSign,
   ListOrdered,
   Activity,
+  Download,
+  FileBarChart,
 } from "lucide-react";
 import { useStore } from "@/store/StoreContext";
 import { Input } from "@/components/ui/input";
@@ -25,8 +27,7 @@ import { Category, MenuItem } from "@/data/menu";
 import { OrderStatus } from "@/store/StoreContext";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-const SESSION_KEY = "rqr_admin_session";
+import { clearRole } from "@/lib/auth";
 
 const emptyDraft = (): Omit<MenuItem, "id"> => ({
   name: "",
@@ -41,22 +42,31 @@ const emptyDraft = (): Omit<MenuItem, "id"> => ({
   available: true,
 });
 
-const STATUSES: ("All" | OrderStatus)[] = ["All", "Taken", "Cooking", "Ready", "Served"];
+const STATUSES: ("All" | OrderStatus)[] = [
+  "All",
+  "Taken",
+  "Cooking",
+  "Ready",
+  "Served",
+  "Cancelled",
+];
+
+type ReportRange = "daily" | "weekly" | "monthly";
+
+const RANGE_MS: Record<ReportRange, number> = {
+  daily: 24 * 60 * 60 * 1000,
+  weekly: 7 * 24 * 60 * 60 * 1000,
+  monthly: 30 * 24 * 60 * 60 * 1000,
+};
 
 const Admin = () => {
   const navigate = useNavigate();
   const { menu, addMenuItem, updateMenuItem, deleteMenuItem, toggleAvailability, orders } =
     useStore();
 
-  useEffect(() => {
-    if (sessionStorage.getItem(SESSION_KEY) !== "1") {
-      navigate("/admin/login", { replace: true });
-    }
-  }, [navigate]);
-
   const logout = () => {
-    sessionStorage.removeItem(SESSION_KEY);
-    navigate("/admin/login", { replace: true });
+    clearRole();
+    navigate("/staff/login?role=admin", { replace: true });
   };
 
   // Menu editor state
@@ -108,6 +118,64 @@ const Admin = () => {
     const active = orders.filter((o) => o.status !== "Served").length;
     return { total, revenue, active };
   }, [orders]);
+
+  // Reports
+  const [range, setRange] = useState<ReportRange>("daily");
+  const report = useMemo(() => {
+    const since = Date.now() - RANGE_MS[range];
+    const inRange = orders.filter((o) => o.createdAt >= since);
+    const completed = inRange.filter((o) => o.status === "Served");
+    const cancelled = inRange.filter((o) => o.status === "Cancelled");
+    const revenue = completed.reduce((s, o) => s + o.total, 0);
+    const avg = completed.length ? revenue / completed.length : 0;
+    return {
+      orders: inRange,
+      totalCount: inRange.length,
+      completedCount: completed.length,
+      cancelledCount: cancelled.length,
+      revenue,
+      avg,
+    };
+  }, [orders, range]);
+
+  const downloadCsv = () => {
+    const header = [
+      "Order ID",
+      "Date",
+      "Table",
+      "Customer",
+      "Phone",
+      "Items",
+      "Total",
+      "Payment",
+      "Status",
+    ];
+    const rows = report.orders.map((o) => [
+      o.id,
+      new Date(o.createdAt).toISOString(),
+      String(o.table),
+      o.customerName,
+      o.phone,
+      o.items.map((c) => `${c.quantity}x ${c.item.name}`).join(" | "),
+      o.total.toFixed(2),
+      o.payment,
+      o.status,
+    ]);
+    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const csv = [header, ...rows]
+      .map((r) => r.map((c) => escape(String(c))).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `report-${range}-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`${range[0].toUpperCase() + range.slice(1)} report downloaded`);
+  };
 
   return (
     <div className="min-h-screen bg-background pb-10">
@@ -258,6 +326,49 @@ const Admin = () => {
           </div>
         </section>
 
+        {/* Reports */}
+        <section className="bg-card rounded-3xl shadow-card p-5">
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <div className="flex items-center gap-2 flex-1">
+              <FileBarChart className="h-5 w-5 text-primary" />
+              <h2 className="font-bold text-lg">Reports</h2>
+            </div>
+            <div className="flex bg-secondary rounded-xl p-1">
+              {(["daily", "weekly", "monthly"] as ReportRange[]).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRange(r)}
+                  className={cn(
+                    "px-3 h-9 rounded-lg text-xs font-semibold capitalize transition",
+                    range === r
+                      ? "bg-card shadow-sm text-foreground"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={downloadCsv}
+              disabled={report.orders.length === 0}
+              className="h-10 px-4 rounded-xl bg-gradient-warm text-primary-foreground font-semibold inline-flex items-center gap-2 shadow-glow active:scale-95 transition disabled:opacity-50"
+            >
+              <Download className="h-4 w-4" /> Download CSV
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <ReportStat label="Orders" value={report.totalCount.toString()} />
+            <ReportStat label="Completed" value={report.completedCount.toString()} />
+            <ReportStat label="Cancelled" value={report.cancelledCount.toString()} />
+            <ReportStat label="Revenue" value={`$${report.revenue.toFixed(2)}`} />
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            Showing {range} window · Avg ticket ${report.avg.toFixed(2)}
+          </p>
+        </section>
+
         {/* Orders dashboard */}
         <section className="bg-card rounded-3xl shadow-card p-5">
           <div className="flex flex-wrap items-center gap-3 mb-4">
@@ -302,6 +413,8 @@ const Admin = () => {
                         ? "bg-blue-100 text-blue-700"
                         : o.status === "Cooking"
                         ? "bg-amber-100 text-amber-800"
+                        : o.status === "Cancelled"
+                        ? "bg-red-100 text-red-700"
                         : "bg-secondary text-secondary-foreground"
                     )}
                   >
@@ -334,6 +447,13 @@ const StatCard = ({
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-xl font-bold">{value}</p>
     </div>
+  </div>
+);
+
+const ReportStat = ({ label, value }: { label: string; value: string }) => (
+  <div className="bg-secondary rounded-xl p-3">
+    <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{label}</p>
+    <p className="text-lg font-bold mt-1">{value}</p>
   </div>
 );
 

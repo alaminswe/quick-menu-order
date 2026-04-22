@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { CheckCircle2, ChefHat, UtensilsCrossed, BellRing, ArrowLeft } from "lucide-react";
-import { useStore, OrderStatus } from "@/store/StoreContext";
+import { CheckCircle2, ChefHat, UtensilsCrossed, BellRing, ArrowLeft, XCircle } from "lucide-react";
+import { useStore, OrderStatus, CANCEL_WINDOW_MS } from "@/store/StoreContext";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const STEPS: { key: OrderStatus; label: string; icon: typeof CheckCircle2 }[] = [
   { key: "Taken", label: "Order Taken", icon: CheckCircle2 },
@@ -13,7 +14,7 @@ const STEPS: { key: OrderStatus; label: string; icon: typeof CheckCircle2 }[] = 
 
 const OrderConfirmation = () => {
   const { id } = useParams();
-  const { orders } = useStore();
+  const { orders, cancelOrder } = useStore();
   const order = orders.find((o) => o.id === id);
   const [, force] = useState(0);
 
@@ -35,6 +36,19 @@ const OrderConfirmation = () => {
   }
 
   const stepIndex = STEPS.findIndex((s) => s.key === order.status);
+  const cancelled = order.status === "Cancelled";
+  const cancelMsLeft = Math.max(
+    0,
+    CANCEL_WINDOW_MS - (Date.now() - order.createdAt)
+  );
+  const cancelEligible = order.status === "Taken" && cancelMsLeft > 0;
+  const cancelSecLeft = Math.ceil(cancelMsLeft / 1000);
+
+  const handleCancel = () => {
+    const r = cancelOrder(order.id);
+    if (r.ok) toast.success("Order cancelled. Refund will be processed.");
+    else toast.error(r.reason ?? "Cannot cancel");
+  };
 
   return (
     <div className="min-h-screen bg-background pb-10">
@@ -67,6 +81,12 @@ const OrderConfirmation = () => {
 
         <section className="bg-card rounded-3xl shadow-card p-5">
           <h3 className="font-bold mb-4">Live Status</h3>
+          {cancelled ? (
+            <div className="rounded-2xl bg-red-50 border border-red-200 text-red-700 p-4 text-center">
+              <XCircle className="h-6 w-6 mx-auto mb-1" />
+              <p className="font-semibold">Order Cancelled</p>
+            </div>
+          ) : (
           <div className="flex justify-between gap-2">
             {STEPS.map((s, i) => {
               const Icon = s.icon;
@@ -95,6 +115,33 @@ const OrderConfirmation = () => {
               );
             })}
           </div>
+          )}
+
+          {!cancelled && (
+            <div className="mt-5 border-t border-border pt-4">
+              {cancelEligible ? (
+                <>
+                  <p className="text-xs text-muted-foreground mb-2 text-center">
+                    You can cancel within{" "}
+                    <span className="font-semibold text-foreground">
+                      {cancelSecLeft}s
+                    </span>{" "}
+                    — only before the kitchen starts cooking.
+                  </p>
+                  <button
+                    onClick={handleCancel}
+                    className="w-full h-12 rounded-xl bg-red-600 text-white font-semibold inline-flex items-center justify-center gap-2 active:scale-[0.98] transition"
+                  >
+                    <XCircle className="h-4 w-4" /> Cancel Order
+                  </button>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground text-center">
+                  Cancellation window has closed. Please ask a waiter for help.
+                </p>
+              )}
+            </div>
+          )}
         </section>
 
         <section className="bg-card rounded-3xl shadow-card p-5">

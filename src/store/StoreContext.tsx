@@ -1,8 +1,11 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MenuItem, menuItems as initialMenu } from "@/data/menu";
 
-export type OrderStatus = "Taken" | "Cooking" | "Ready" | "Served";
+export type OrderStatus = "Taken" | "Cooking" | "Ready" | "Served" | "Cancelled";
 export type PaymentMethod = "online" | "counter";
+
+// Customer can cancel within this window (ms) and only before Cooking starts.
+export const CANCEL_WINDOW_MS = 2 * 60 * 1000;
 
 export interface CartItem {
   item: MenuItem;
@@ -53,6 +56,8 @@ interface StoreValue {
     preOrder: boolean;
   }) => Order;
   setOrderStatus: (id: string, status: OrderStatus) => void;
+  cancelOrder: (id: string) => { ok: boolean; reason?: string };
+  canCancel: (id: string) => boolean;
 }
 
 const StoreContext = createContext<StoreValue | undefined>(undefined);
@@ -212,6 +217,26 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const canCancel: StoreValue["canCancel"] = (id) => {
+    const o = orders.find((x) => x.id === id);
+    if (!o) return false;
+    if (o.status !== "Taken") return false;
+    return Date.now() - o.createdAt <= CANCEL_WINDOW_MS;
+  };
+
+  const cancelOrder: StoreValue["cancelOrder"] = (id) => {
+    const o = orders.find((x) => x.id === id);
+    if (!o) return { ok: false, reason: "Order not found" };
+    if (o.status !== "Taken")
+      return { ok: false, reason: "Order is already being prepared" };
+    if (Date.now() - o.createdAt > CANCEL_WINDOW_MS)
+      return { ok: false, reason: "Cancellation window expired" };
+    setOrders((prev) =>
+      prev.map((x) => (x.id === id ? { ...x, status: "Cancelled" } : x))
+    );
+    return { ok: true };
+  };
+
   const value: StoreValue = {
     menu,
     addMenuItem,
@@ -229,6 +254,8 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     orders,
     placeOrder,
     setOrderStatus,
+    cancelOrder,
+    canCancel,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

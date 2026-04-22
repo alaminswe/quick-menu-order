@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { ChefHat, AlertTriangle, ArrowLeft, Flame, BellRing } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ChefHat, AlertTriangle, ArrowLeft, Flame, BellRing, LogOut } from "lucide-react";
 import { useStore } from "@/store/StoreContext";
 import { cn } from "@/lib/utils";
+import { clearRole } from "@/lib/auth";
 
 const formatElapsed = (ms: number) => {
   const totalSec = Math.floor(ms / 1000);
@@ -12,6 +13,7 @@ const formatElapsed = (ms: number) => {
 };
 
 const Kitchen = () => {
+  const navigate = useNavigate();
   const { orders, setOrderStatus } = useStore();
   const [, force] = useState(0);
 
@@ -32,10 +34,19 @@ const Kitchen = () => {
           <div className="h-10 w-10 rounded-2xl bg-gradient-warm flex items-center justify-center shadow-glow">
             <ChefHat className="h-5 w-5 text-primary-foreground" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl font-bold">Kitchen Display</h1>
             <p className="text-xs text-muted-foreground">{active.length} active order(s)</p>
           </div>
+          <button
+            onClick={() => {
+              clearRole();
+              navigate("/staff/login?role=kitchen", { replace: true });
+            }}
+            className="text-sm font-semibold inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-secondary hover:bg-muted"
+          >
+            <LogOut className="h-4 w-4" /> Logout
+          </button>
         </div>
       </header>
 
