@@ -9,6 +9,8 @@ import {
   DollarSign,
   ListOrdered,
   Activity,
+  Download,
+  FileBarChart,
 } from "lucide-react";
 import { useStore } from "@/store/StoreContext";
 import { Input } from "@/components/ui/input";
@@ -25,8 +27,7 @@ import { Category, MenuItem } from "@/data/menu";
 import { OrderStatus } from "@/store/StoreContext";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-const SESSION_KEY = "rqr_admin_session";
+import { clearRole } from "@/lib/auth";
 
 const emptyDraft = (): Omit<MenuItem, "id"> => ({
   name: "",
@@ -41,22 +42,31 @@ const emptyDraft = (): Omit<MenuItem, "id"> => ({
   available: true,
 });
 
-const STATUSES: ("All" | OrderStatus)[] = ["All", "Taken", "Cooking", "Ready", "Served"];
+const STATUSES: ("All" | OrderStatus)[] = [
+  "All",
+  "Taken",
+  "Cooking",
+  "Ready",
+  "Served",
+  "Cancelled",
+];
+
+type ReportRange = "daily" | "weekly" | "monthly";
+
+const RANGE_MS: Record<ReportRange, number> = {
+  daily: 24 * 60 * 60 * 1000,
+  weekly: 7 * 24 * 60 * 60 * 1000,
+  monthly: 30 * 24 * 60 * 60 * 1000,
+};
 
 const Admin = () => {
   const navigate = useNavigate();
   const { menu, addMenuItem, updateMenuItem, deleteMenuItem, toggleAvailability, orders } =
     useStore();
 
-  useEffect(() => {
-    if (sessionStorage.getItem(SESSION_KEY) !== "1") {
-      navigate("/admin/login", { replace: true });
-    }
-  }, [navigate]);
-
   const logout = () => {
-    sessionStorage.removeItem(SESSION_KEY);
-    navigate("/admin/login", { replace: true });
+    clearRole();
+    navigate("/staff/login?role=admin", { replace: true });
   };
 
   // Menu editor state
