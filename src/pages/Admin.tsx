@@ -119,6 +119,64 @@ const Admin = () => {
     return { total, revenue, active };
   }, [orders]);
 
+  // Reports
+  const [range, setRange] = useState<ReportRange>("daily");
+  const report = useMemo(() => {
+    const since = Date.now() - RANGE_MS[range];
+    const inRange = orders.filter((o) => o.createdAt >= since);
+    const completed = inRange.filter((o) => o.status === "Served");
+    const cancelled = inRange.filter((o) => o.status === "Cancelled");
+    const revenue = completed.reduce((s, o) => s + o.total, 0);
+    const avg = completed.length ? revenue / completed.length : 0;
+    return {
+      orders: inRange,
+      totalCount: inRange.length,
+      completedCount: completed.length,
+      cancelledCount: cancelled.length,
+      revenue,
+      avg,
+    };
+  }, [orders, range]);
+
+  const downloadCsv = () => {
+    const header = [
+      "Order ID",
+      "Date",
+      "Table",
+      "Customer",
+      "Phone",
+      "Items",
+      "Total",
+      "Payment",
+      "Status",
+    ];
+    const rows = report.orders.map((o) => [
+      o.id,
+      new Date(o.createdAt).toISOString(),
+      String(o.table),
+      o.customerName,
+      o.phone,
+      o.items.map((c) => `${c.quantity}x ${c.item.name}`).join(" | "),
+      o.total.toFixed(2),
+      o.payment,
+      o.status,
+    ]);
+    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const csv = [header, ...rows]
+      .map((r) => r.map((c) => escape(String(c))).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `report-${range}-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`${range[0].toUpperCase() + range.slice(1)} report downloaded`);
+  };
+
   return (
     <div className="min-h-screen bg-background pb-10">
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border">
