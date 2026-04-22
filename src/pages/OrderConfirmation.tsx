@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { CheckCircle2, ChefHat, UtensilsCrossed, BellRing, ArrowLeft, XCircle } from "lucide-react";
+import { CheckCircle2, ChefHat, UtensilsCrossed, BellRing, ArrowLeft, XCircle, FileText } from "lucide-react";
 import { useStore, OrderStatus, CANCEL_WINDOW_MS } from "@/store/StoreContext";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-const STEPS: { key: OrderStatus; label: string; icon: typeof CheckCircle2 }[] = [
-  { key: "Taken", label: "Order Taken", icon: CheckCircle2 },
-  { key: "Cooking", label: "Cooking", icon: ChefHat },
-  { key: "Ready", label: "Ready", icon: BellRing },
-  { key: "Served", label: "Served", icon: UtensilsCrossed },
+const STEPS: {
+  key: OrderStatus;
+  label: string;
+  desc: string;
+  icon: typeof CheckCircle2;
+}[] = [
+  { key: "Taken", label: "Order Taken", desc: "We received your order", icon: CheckCircle2 },
+  { key: "Cooking", label: "In the Kitchen", desc: "Chef is preparing your food", icon: ChefHat },
+  { key: "Ready", label: "Ready", desc: "Your food is ready to serve", icon: BellRing },
+  { key: "Served", label: "Served", desc: "Enjoy your meal!", icon: UtensilsCrossed },
 ];
 
 const OrderConfirmation = () => {
