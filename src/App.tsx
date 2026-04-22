@@ -7,6 +7,7 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import OrderConfirmation from "./pages/OrderConfirmation.tsx";
+import Invoice from "./pages/Invoice.tsx";
 import Kitchen from "./pages/Kitchen.tsx";
 import Waiter from "./pages/Waiter.tsx";
 import StaffLogin from "./pages/StaffLogin.tsx";
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/menu" element={<Index />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order/:id" element={<OrderConfirmation />} />
+            <Route path="/invoice/:id" element={<Invoice />} />
             <Route
               path="/kitchen"
               element={
