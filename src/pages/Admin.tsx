@@ -448,4 +448,11 @@ const StatCard = ({
   </div>
 );
 
+const ReportStat = ({ label, value }: { label: string; value: string }) => (
+  <div className="bg-secondary rounded-xl p-3">
+    <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{label}</p>
+    <p className="text-lg font-bold mt-1">{value}</p>
+  </div>
+);
+
 export default Admin;
