@@ -326,6 +326,49 @@ const Admin = () => {
           </div>
         </section>
 
+        {/* Reports */}
+        <section className="bg-card rounded-3xl shadow-card p-5">
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <div className="flex items-center gap-2 flex-1">
+              <FileBarChart className="h-5 w-5 text-primary" />
+              <h2 className="font-bold text-lg">Reports</h2>
+            </div>
+            <div className="flex bg-secondary rounded-xl p-1">
+              {(["daily", "weekly", "monthly"] as ReportRange[]).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRange(r)}
+                  className={cn(
+                    "px-3 h-9 rounded-lg text-xs font-semibold capitalize transition",
+                    range === r
+                      ? "bg-card shadow-sm text-foreground"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={downloadCsv}
+              disabled={report.orders.length === 0}
+              className="h-10 px-4 rounded-xl bg-gradient-warm text-primary-foreground font-semibold inline-flex items-center gap-2 shadow-glow active:scale-95 transition disabled:opacity-50"
+            >
+              <Download className="h-4 w-4" /> Download CSV
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <ReportStat label="Orders" value={report.totalCount.toString()} />
+            <ReportStat label="Completed" value={report.completedCount.toString()} />
+            <ReportStat label="Cancelled" value={report.cancelledCount.toString()} />
+            <ReportStat label="Revenue" value={`$${report.revenue.toFixed(2)}`} />
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            Showing {range} window · Avg ticket ${report.avg.toFixed(2)}
+          </p>
+        </section>
+
         {/* Orders dashboard */}
         <section className="bg-card rounded-3xl shadow-card p-5">
           <div className="flex flex-wrap items-center gap-3 mb-4">
