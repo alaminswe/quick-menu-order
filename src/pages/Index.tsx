@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { CalendarClock } from "lucide-react";
 import Header from "@/components/menu/Header";
 import CategoryTabs from "@/components/menu/CategoryTabs";
@@ -9,11 +9,13 @@ import CartSheet from "@/components/menu/CartSheet";
 import { Category, Diet, dietFilters } from "@/data/menu";
 import { useStore } from "@/store/StoreContext";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const Index = () => {
   const [params] = useSearchParams();
   const table = Number(params.get("table") ?? 1);
-  const { menu } = useStore();
+  const { menu, cart } = useStore();
+  const navigate = useNavigate();
 
   const [active, setActive] = useState<Category>("Food");
   const [cartOpen, setCartOpen] = useState(false);
@@ -32,6 +34,20 @@ const Index = () => {
     [active, diets, menu]
   );
 
+  const handlePreOrder = () => {
+    if (cart.length === 0) {
+      toast.error("Please add items to your cart first", {
+        description: "Choose your favorite dishes below, then schedule your pre-order at checkout.",
+      });
+      // Smooth scroll to menu so the customer can start picking items
+      document
+        .getElementById("menu-section")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    navigate(`/checkout?table=${table}&preorder=1`);
+  };
+
   return (
     <div className="min-h-screen bg-background pb-32">
       <Header table={table} />
@@ -46,12 +62,13 @@ const Index = () => {
               Browse our menu, customize your order & enjoy.
             </p>
           </div>
-          <Link
-            to={`/checkout?table=${table}&preorder=1`}
+          <button
+            type="button"
+            onClick={handlePreOrder}
             className="inline-flex items-center justify-center gap-2 self-start md:self-auto px-5 py-3 rounded-2xl border-2 border-primary text-primary font-semibold hover:bg-primary/10 transition active:scale-95"
           >
             <CalendarClock className="h-5 w-5" /> Pre-order for later
-          </Link>
+          </button>
         </section>
 
         <CategoryTabs active={active} onChange={setActive} />
@@ -76,7 +93,7 @@ const Index = () => {
           })}
         </div>
 
-        <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+        <section id="menu-section" className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mt-4 scroll-mt-24">
           {filtered.length === 0 ? (
             <p className="text-muted-foreground text-sm col-span-full text-center py-8">
               No items match your filters.
