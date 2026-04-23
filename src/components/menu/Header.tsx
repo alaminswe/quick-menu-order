@@ -2,8 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   UtensilsCrossed,
-  ChefHat,
-  ConciergeBell,
   Menu as MenuIcon,
   QrCode,
   Search,
@@ -21,12 +19,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-// Customer-facing header only exposes staff entry points for Kitchen and Waiter.
-// Admin is intentionally hidden — accessible only by visiting /admin directly.
+// Customer-facing header only.
+// Staff entry points (Kitchen, Waiter, Admin) are hidden — accessible only via direct URLs.
 const navLinks = [
   { to: "/track", label: "Track Order", icon: Eye },
-  { to: "/kitchen", label: "Kitchen", icon: ChefHat },
-  { to: "/waiter", label: "Waiter", icon: ConciergeBell },
 ];
 
 const Header = ({ table }: { table: number }) => {
