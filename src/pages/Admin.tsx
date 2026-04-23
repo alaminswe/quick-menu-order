@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   LogOut,
   Plus,
   Trash2,
@@ -202,9 +201,6 @@ const Admin = () => {
     <div className="min-h-screen bg-background pb-10">
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border">
         <div className="container max-w-6xl flex items-center gap-3 py-4">
-          <Link to="/" className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
           <h1 className="text-xl font-bold flex-1">Admin Panel</h1>
           <button
             onClick={logout}
