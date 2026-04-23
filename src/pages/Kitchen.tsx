@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ChefHat, AlertTriangle, ArrowLeft, Flame, BellRing, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ChefHat, AlertTriangle, Flame, BellRing, LogOut } from "lucide-react";
 import { useStore } from "@/store/StoreContext";
 import { cn } from "@/lib/utils";
 import { clearRole } from "@/lib/auth";
@@ -28,9 +28,6 @@ const Kitchen = () => {
     <div className="min-h-screen bg-background pb-10">
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border">
         <div className="container max-w-6xl flex items-center gap-3 py-4">
-          <Link to="/" className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
           <div className="h-10 w-10 rounded-2xl bg-gradient-warm flex items-center justify-center shadow-glow">
             <ChefHat className="h-5 w-5 text-primary-foreground" />
           </div>
