@@ -11,6 +11,8 @@ import {
   Activity,
   Download,
   FileBarChart,
+  Upload,
+  ImageIcon,
 } from "lucide-react";
 import { useStore } from "@/store/StoreContext";
 import { Input } from "@/components/ui/input";
@@ -96,6 +98,25 @@ const Admin = () => {
       toast.success("Item added");
     }
     resetForm();
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be under 2MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setDraft((d) => ({ ...d, image: reader.result as string }));
+      toast.success("Image attached");
+    };
+    reader.readAsDataURL(file);
   };
 
   // Order filters
@@ -211,6 +232,37 @@ const Admin = () => {
           <h2 className="font-bold text-lg mb-4">Menu Management</h2>
 
           <form onSubmit={submitForm} className="grid sm:grid-cols-2 gap-3 mb-5">
+            <div className="sm:col-span-2 flex items-center gap-4 p-3 rounded-2xl bg-secondary/50">
+              <div className="h-20 w-20 rounded-xl overflow-hidden bg-muted flex items-center justify-center shrink-0 border border-border">
+                {draft.image && draft.image !== "/placeholder.svg" ? (
+                  <img src={draft.image} alt="Preview" className="h-full w-full object-cover" />
+                ) : (
+                  <ImageIcon className="h-7 w-7 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <Label className="text-sm font-semibold">Item Photo</Label>
+                <p className="text-xs text-muted-foreground mb-2">PNG or JPG, up to 2MB</p>
+                <label className="inline-flex items-center gap-2 h-9 px-3 rounded-lg bg-card border border-border text-sm font-semibold cursor-pointer hover:bg-muted transition">
+                  <Upload className="h-4 w-4" /> Upload Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                </label>
+                {draft.image && draft.image !== "/placeholder.svg" && (
+                  <button
+                    type="button"
+                    onClick={() => setDraft({ ...draft, image: "/placeholder.svg" })}
+                    className="ml-2 text-xs text-destructive font-semibold"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
             <div className="space-y-1">
               <Label>Name</Label>
               <Input
