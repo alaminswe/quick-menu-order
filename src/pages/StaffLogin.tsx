@@ -23,7 +23,7 @@ const StaffLogin = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const requested = (params.get("role") as Role) || "admin";
-  const next = params.get("next") || `/${requested}`;
+  const nextParam = params.get("next");
 
   const [role, setRole] = useState<Role>(
     requested === "kitchen" || requested === "waiter" ? requested : "admin"
@@ -33,10 +33,14 @@ const StaffLogin = () => {
   const [lockUntil, setLockUntil] = useState(0);
   const [now, setNow] = useState(Date.now());
 
+  // Only auto-redirect on initial mount if already signed in as the requested role.
   useEffect(() => {
     const current = getCurrentRole();
-    if (current === role) navigate(next, { replace: true });
-  }, [role, navigate, next]);
+    if (current === requested) {
+      navigate(nextParam || `/${requested}`, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (lockUntil <= Date.now()) return;
@@ -53,7 +57,9 @@ const StaffLogin = () => {
     if (password === ROLE_CREDENTIALS[role]) {
       setCurrentRole(role);
       toast.success(`Welcome, ${ROLE_LABEL[role]}`);
-      navigate(next, { replace: true });
+      // If the requested role matches the chosen role, honor `next`; otherwise go to that role's page.
+      const dest = role === requested && nextParam ? nextParam : `/${role}`;
+      navigate(dest, { replace: true });
       return;
     }
     const n = attempts + 1;
