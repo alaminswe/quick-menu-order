@@ -98,7 +98,11 @@ const StaffLogin = () => {
               <button
                 key={r}
                 type="button"
-                onClick={() => setRole(r)}
+                onClick={() => {
+                  setRole(r);
+                  setPassword("");
+                  setAttempts(0);
+                }}
                 className={cn(
                   "flex flex-col items-center gap-1 py-3 rounded-xl border-2 text-xs font-semibold transition",
                   active
